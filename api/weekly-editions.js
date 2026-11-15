@@ -50,12 +50,14 @@ const toPublicEdition = edition => ({
       title: text(story.title),
       summary: text(story.summary),
       context: text(story.context),
+      contextLabel: text(story.contextLabel),
       source: text(story.source),
       url: text(story.url),
       imageUrl: text(story.imageUrl)
     }))
   })),
-  analysis: text(edition.analysis)
+  analysis: text(edition.analysis),
+  watchNext: list(edition.watchNext).map(text).filter(Boolean)
 });
 
 module.exports = async function handler(req, res) {
