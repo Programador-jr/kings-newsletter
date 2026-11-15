@@ -905,9 +905,12 @@
     gap: 0.5rem;
   }
 
+  /* Em coluna, o flex-wrap herdado faria o kicker (flex-basis: 100%)
+     abrir uma segunda coluna e vazar do cartão. */
   .weekly-meta {
     align-items: flex-start;
     flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .weekly-meta-number + span {

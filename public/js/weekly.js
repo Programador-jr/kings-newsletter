@@ -20,9 +20,12 @@
   const SITE_NAME = "King's Newsletter";
   const DEFAULT_TITLE = 'A Semana em Foco';
   const SIGN_OFF = 'King’s Newsletter — Informação, contexto e análise para compreender o que acontece no Brasil e no mundo.';
-  const CONTEXT_HEADING = 'Por que isso importa?';
+  // Título do contexto quando a matéria não traz `contextLabel` nem abre com pergunta.
+  const CONTEXT_HEADING = 'Além da manchete';
   const ANALYSIS_ID = 'o-que-a-semana-nos-mostrou';
   const ANALYSIS_HEADING = 'O que a semana nos mostrou';
+  const WATCH_ID = 'o-que-acompanhar';
+  const WATCH_HEADING = 'O que acompanhar';
   const WORDS_PER_MINUTE = 200;
   const slug = new URLSearchParams(window.location.search).get('slug');
 
@@ -180,6 +183,7 @@
     const words = [edition.intro, edition.analysis]
       .concat(sectionsOf(edition).map(section => section.intro))
       .concat(storiesOf(edition).flatMap(story => [story.title, story.summary, story.context]))
+      .concat(list(edition.watchNext))
       .filter(Boolean)
       .join(' ')
       .split(/\s+/)
@@ -423,8 +427,17 @@
     block.append(el('h3', '', story.title));
     textBlocks(story.summary).forEach(node => block.append(node));
     if (story.context) {
-      if (!isQuestion(firstLine(story.context))) block.append(el('h4', 'weekly-question', CONTEXT_HEADING));
-      textBlocks(story.context).forEach(node => block.append(node));
+      // Mesmo modelo do resumo diário: o rótulo da matéria (`contextLabel`)
+      // substitui a pergunta de abertura; sem rótulo nem pergunta, usa o título padrão.
+      const label = typeof story.contextLabel === 'string' ? story.contextLabel.trim() : '';
+      let context = story.context;
+      if (label) {
+        if (isQuestion(firstLine(context))) context = String(context).trim().split(/\r?\n/).slice(1).join('\n');
+        block.append(el('h4', 'weekly-question', label));
+      } else if (!isQuestion(firstLine(context))) {
+        block.append(el('h4', 'weekly-question', CONTEXT_HEADING));
+      }
+      textBlocks(context).forEach(node => block.append(node));
     }
     const source = renderSource(story);
     if (source) block.append(source);
@@ -571,10 +584,22 @@
       content.append(analysis);
     }
 
+    const watch = list(edition.watchNext);
+    if (watch.length) {
+      const section = el('section', 'weekly-chapter weekly-analysis');
+      section.id = WATCH_ID;
+      section.append(el('h2', '', WATCH_HEADING));
+      const items = el('ul', 'weekly-bullets');
+      watch.forEach(item => items.append(el('li', '', item)));
+      section.append(items);
+      content.append(section);
+    }
+
     content.append(el('p', 'weekly-signoff', SIGN_OFF));
 
     const entries = sections.map((section, index) => ['secao-' + (index + 1), section.title]);
     if (edition.analysis) entries.push([ANALYSIS_ID, ANALYSIS_HEADING]);
+    if (watch.length) entries.push([WATCH_ID, WATCH_HEADING]);
     const toc = entries.length ? renderToc(entries) : null;
 
     editionRoot.replaceChildren(...[toc, content].filter(Boolean));
