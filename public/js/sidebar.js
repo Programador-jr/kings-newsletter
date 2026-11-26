@@ -569,7 +569,7 @@ const initializeNavigation = () => {
   const bottomMore = document.getElementById("site-bottom-more");
   bottomMore?.addEventListener("click", () => {
     setOpen(!sidebar.classList.contains("is-open"));
-    bottomMore.setAttribute("aria-expanded", String(!sidebar.classList.contains("is-open")));
+    bottomMore.setAttribute("aria-expanded", String(sidebar.classList.contains("is-open")));
   });
   const syncBottomMore = () => {
     const expanded = sidebar.classList.contains("is-open");
@@ -588,6 +588,7 @@ const initializeNavigation = () => {
   sidebar.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
     saveSidebarScroll();
     setOpen(false);
+    bottomMore?.setAttribute("aria-expanded", "false");
   }));
 };
 
