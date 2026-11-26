@@ -77,6 +77,18 @@
   ],
   "rewrites": [
     {
+      "source": "/brand/:path*",
+      "destination": "https://kings-legis.vercel.app/brand/:path*"
+    },
+    {
+      "source": "/partidos/:path*",
+      "destination": "https://kings-legis.vercel.app/partidos/:path*"
+    },
+    {
+      "source": "/favicon.png",
+      "destination": "https://kings-legis.vercel.app/favicon.png"
+    },
+    {
       "source": "/legis",
       "destination": "https://kings-legis.vercel.app/legis"
     },
@@ -198,7 +210,12 @@
     },
     {
       "source": "/editions",
-      "has": [{ "type": "query", "key": "date" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "date"
+        }
+      ],
       "destination": "/api/control?route=page/news"
     },
     {
@@ -207,7 +224,12 @@
     },
     {
       "source": "/weekly",
-      "has": [{ "type": "query", "key": "slug" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "slug"
+        }
+      ],
       "destination": "/api/control?route=page/weekly"
     },
     {
@@ -216,7 +238,12 @@
     },
     {
       "source": "/resumo-diario",
-      "has": [{ "type": "query", "key": "data" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "data"
+        }
+      ],
       "destination": "/api/control?route=page/daily"
     },
     {
