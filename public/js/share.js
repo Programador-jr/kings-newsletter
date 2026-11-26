@@ -563,10 +563,13 @@
     if (!current) return;
     const isImage = format === 'image';
     ui.radios.forEach(radio => { radio.checked = radio.value === format; });
+    ui.formats.hidden = isImage;
     ui.textWrap.hidden = isImage;
     ui.imageWrap.hidden = !isImage;
+    ui.linksTitle.hidden = isImage;
+    ui.links.hidden = isImage;
     ui.imageBar.hidden = !isImage;
-    // Com imagem, a rede abre com título + link e a imagem vai anexada ou colada.
+    // No modo imagem, exibe somente as ações diretas do PNG.
     const hrefs = targetsFor(current, isImage ? 'title' : format);
     ui.links.querySelectorAll('a[data-target]').forEach(link => {
       link.href = hrefs[link.dataset.target];
@@ -676,7 +679,7 @@
     document.body.append(dialog);
 
     ui = {
-      storyTitle, radios, textWrap, preview, imageWrap, imagePreview, links, native, copy, imageBar,
+      storyTitle, radios, formats, textWrap, preview, imageWrap, imagePreview, linksTitle, links, native, copy, imageBar,
       download, shareImage, copyImage, imageActions: [download, shareImage, copyImage], hint, status
     };
 
