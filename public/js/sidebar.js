@@ -601,14 +601,18 @@ const mountSharedNavigation = async () => {
     const sharedHeader = template.content.querySelector(".site-header");
     const sharedSidebar = template.content.querySelector("#site-sidebar");
     const sharedBackdrop = template.content.querySelector("#site-sidebar-backdrop");
+    const sharedBottomNav = template.content.querySelector(".site-bottom-nav");
     const currentHeader = document.querySelector(".site-header");
     const currentSidebar = document.querySelector("#site-sidebar");
     const currentBackdrop = document.querySelector("#site-sidebar-backdrop");
-    if (!sharedHeader || !sharedSidebar || !sharedBackdrop || !currentHeader || !currentSidebar) return;
+    const currentBottomNav = document.querySelector(".site-bottom-nav");
+    if (!sharedHeader || !sharedSidebar || !sharedBackdrop || !sharedBottomNav || !currentHeader || !currentSidebar) return;
     currentHeader.replaceWith(sharedHeader);
     currentSidebar.replaceWith(sharedSidebar);
     if (currentBackdrop) currentBackdrop.replaceWith(sharedBackdrop);
     else document.body.append(sharedBackdrop);
+    if (currentBottomNav) currentBottomNav.replaceWith(sharedBottomNav);
+    else document.body.append(sharedBottomNav);
     window.dispatchEvent(new CustomEvent("site:navigation-ready"));
     initializeNavigation();
   } catch (error) {
