@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
+    "api/control.js": {
+      "includeFiles": "public/{editions,resumo-diario,weekly}.html"
+    },
     "api/public-data.js": {
       "regions": [
         "gru1"
@@ -98,6 +101,18 @@
       "destination": "https://kings-economy.vercel.app/economy/:path*"
     },
     {
+      "source": "/legis",
+      "destination": "https://kings-legis.vercel.app/legis"
+    },
+    {
+      "source": "/legis/:path*",
+      "destination": "https://kings-legis.vercel.app/legis/:path*"
+    },
+    {
+      "source": "/_next/:path*",
+      "destination": "https://kings-legis.vercel.app/_next/:path*"
+    },
+    {
       "source": "/media/:path*",
       "destination": "https://pub-fcf4bc76fe3b4643b8c8b2c76bc61ad1.r2.dev/:path*"
     },
@@ -138,6 +153,14 @@
       "destination": "/api/control?route=admin/email-banner"
     },
     {
+      "source": "/sitemap-edicoes.xml",
+      "destination": "/api/control?route=sitemap/editions"
+    },
+    {
+      "source": "/api/admin/editorial",
+      "destination": "/api/control?route=admin/editorial"
+    },
+    {
       "source": "/api/updates/active",
       "destination": "/api/control?route=updates/active"
     },
@@ -159,11 +182,26 @@
     },
     {
       "source": "/editions",
+      "has": [{ "type": "query", "key": "date" }],
+      "destination": "/api/control?route=page/news"
+    },
+    {
+      "source": "/editions",
       "destination": "/editions.html"
     },
     {
       "source": "/weekly",
+      "has": [{ "type": "query", "key": "slug" }],
+      "destination": "/api/control?route=page/weekly"
+    },
+    {
+      "source": "/weekly",
       "destination": "/weekly.html"
+    },
+    {
+      "source": "/resumo-diario",
+      "has": [{ "type": "query", "key": "data" }],
+      "destination": "/api/control?route=page/daily"
     },
     {
       "source": "/resumo-diario",

@@ -422,8 +422,9 @@
     return line;
   };
 
-  const renderStory = story => {
+  const renderStory = (story, number, edition) => {
     const block = el('section', 'weekly-story');
+    block.id = 'materia-' + number;
     block.append(el('h3', '', story.title));
     textBlocks(story.summary).forEach(node => block.append(node));
     if (story.context) {
@@ -441,6 +442,15 @@
     }
     const source = renderSource(story);
     if (source) block.append(source);
+    if (window.KingsShare) {
+      const actions = el('div', 'weekly-story-actions');
+      actions.append(window.KingsShare.button({
+        ...story,
+        kicker: editionLabel(edition),
+        url: window.KingsShare.permalink('/weekly', { slug: edition.slug }, block.id)
+      }));
+      block.append(actions);
+    }
     return block;
   };
 
@@ -567,12 +577,13 @@
       content.append(intro);
     }
 
+    let storyNumber = 0;
     sections.forEach((section, index) => {
       const chapter = el('section', 'weekly-chapter');
       chapter.id = 'secao-' + (index + 1);
       chapter.append(el('h2', '', section.title));
       textBlocks(section.intro, 'weekly-chapter-intro').forEach(node => chapter.append(node));
-      list(section.stories).forEach(story => chapter.append(renderStory(story)));
+      list(section.stories).forEach(story => chapter.append(renderStory(story, ++storyNumber, edition)));
       content.append(chapter);
     });
 
@@ -609,10 +620,28 @@
     if (toc) trackActiveSection(toc);
 
     const title = titleOf(edition);
-    document.title = /king['’]s newsletter/i.test(title) ? title : title + ' | ' + SITE_NAME;
-    const description = document.querySelector('meta[name="description"]');
+    const pageTitle = /king['’]s newsletter/i.test(title) ? title : title + ' | ' + SITE_NAME;
     const summary = excerpt(edition.intro, 157);
-    if (description && summary) description.setAttribute('content', summary);
+    if (window.KingsSeo) {
+      const stories = sections.flatMap(section => list(section.stories));
+      const images = stories.map(story => window.KingsSeo.absolute(story.imageUrl)).filter(Boolean);
+      window.KingsSeo.update({
+        title: pageTitle,
+        description: summary || edition.subtitle,
+        image: images[0],
+        type: 'article',
+        jsonld: window.KingsSeo.newsArticle({
+          headline: title,
+          description: summary || edition.subtitle || title,
+          datePublished: edition.publishedAt || edition.weekEnd,
+          images: images.slice(0, 3),
+          section: 'A Semana em Foco',
+          keywords: sections.map(section => section.title).filter(Boolean)
+        })
+      });
+    } else {
+      document.title = pageTitle;
+    }
 
     if (window.location.hash) {
       const target = document.getElementById(window.location.hash.slice(1));

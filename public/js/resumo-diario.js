@@ -404,8 +404,9 @@
     return figure;
   };
 
-  const renderStory = (story, rank) => {
+  const renderStory = (story, rank, digest) => {
     const block = el('section', 'weekly-story');
+    block.id = 'noticia-' + rank;
     const heading = el('h3');
     heading.append(el('span', 'daily-rank', String(rank).padStart(2, '0')), document.createTextNode(story.title));
     block.append(heading);
@@ -426,6 +427,16 @@
     }
     const source = renderSource(story);
     if (source) block.append(source);
+    if (window.KingsShare) {
+      const actions = el('div', 'weekly-story-actions');
+      actions.append(window.KingsShare.button({
+        ...story,
+        sourceUrl: story.url,
+        kicker: editionLabel(digest),
+        url: window.KingsShare.permalink(PAGE_PATH, { data: digest.date }, block.id)
+      }));
+      block.append(actions);
+    }
     return block;
   };
 
@@ -546,7 +557,7 @@
       block.append(el('h2', '', chapter.title));
       chapter.stories.forEach(story => {
         rank += 1;
-        block.append(renderStory(story, rank));
+        block.append(renderStory(story, rank, digest));
       });
       content.append(block);
     });
@@ -574,10 +585,29 @@
     editionRoot.hidden = false;
     if (toc) trackActiveSection(toc);
 
-    document.title = titleOf(digest) + ' | ' + BRAND + ' | ' + SITE_NAME;
-    const description = document.querySelector('meta[name="description"]');
+    const pageTitle = titleOf(digest) + ' | Resumo de ' + formatDay(digest.date) + ' | ' + SITE_NAME;
     const summary = excerpt(digest.preheader || storiesOf(digest)[0]?.summary, 157);
-    if (description && summary) description.setAttribute('content', summary);
+    if (window.KingsSeo) {
+      const images = storiesOf(digest).map(story => window.KingsSeo.absolute(story.image?.url)).filter(Boolean);
+      const lead = storiesOf(digest).find(story => window.KingsSeo.absolute(story.image?.url));
+      window.KingsSeo.update({
+        title: pageTitle,
+        description: summary,
+        image: images[0],
+        imageAlt: lead?.image?.alt,
+        type: 'article',
+        jsonld: window.KingsSeo.newsArticle({
+          headline: titleOf(digest),
+          description: summary,
+          datePublished: digest.sentAt || (digest.date + 'T12:00:00Z'),
+          images: images.slice(0, 3),
+          section: BRAND,
+          keywords: [...new Set(storiesOf(digest).map(story => story.category).filter(Boolean))]
+        })
+      });
+    } else {
+      document.title = pageTitle;
+    }
 
     if (window.location.hash) {
       const target = document.getElementById(window.location.hash.slice(1));

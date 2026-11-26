@@ -8,6 +8,11 @@ const handlers = {
   'admin/updates': require('../lib/api-handlers/admin/updates'),
   'admin/digests': require('../lib/api-handlers/admin/digests'),
   'admin/email-banner': require('../lib/api-handlers/admin/email-banner'),
+  'admin/editorial': require('../lib/api-handlers/admin/editorial'),
+  'sitemap/editions': require('../lib/api-handlers/public-data/sitemap-editions'),
+  'page/news': require('../lib/api-handlers/public-data/edition-page').news,
+  'page/daily': require('../lib/api-handlers/public-data/edition-page').daily,
+  'page/weekly': require('../lib/api-handlers/public-data/edition-page').weekly,
   'worker/config': require('../lib/api-handlers/worker/config'),
   'worker/heartbeat': require('../lib/api-handlers/worker/heartbeat'),
   'updates/active': require('../lib/api-handlers/updates/active')

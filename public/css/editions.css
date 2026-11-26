@@ -156,6 +156,17 @@
   text-decoration: underline;
 }
 
+/* Compartilhar (share.js) ao lado de "Ler fonte". */
+.story-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.story[id] {
+  scroll-margin-top: 5.5rem;
+}
+
 .history-toggle {
   position: fixed;
   right: 2rem;

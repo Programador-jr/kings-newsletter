@@ -7,6 +7,7 @@ const grid = document.querySelector("#news-grid"),
   filterButtons = document.getElementById('filter-buttons');
 
 let currentStories = [];
+let currentEdition = { date: '', issueNumber: null };
 let currentFilter = 'all';
 let currentSearch = '';
 let searchInput = null;
@@ -170,7 +171,8 @@ fetch("/api/news")
       dateEl.textContent = formatEditionLabel(data?.issueNumber, data?.date);
     }
 
-    document.title = `King's Newsletter — ${formatDate(data?.date)}`;
+    // A home mantém o título do HTML; só a página de edições ganha título da edição.
+    if (isEditionsPage) updateEditionSeo(data, stories);
     renderEditionSnapshot(data, stories);
 
     if (currentPage === '/') {
@@ -181,10 +183,12 @@ fetch("/api/news")
         showMessage(featuredNews, 'Nenhuma notícia disponível', 'Não há notícias para exibir nesta edição.');
       }
     } else if (isEditionsPage) {
+      currentEdition = { date: asText(data?.date), issueNumber: data?.issueNumber };
       currentStories = stories;
       setupCategoryFilters(currentStories);
       bindNavigationSearch();
       renderStories(currentStories);
+      if (window.location.hash && !dateParam) document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ block: 'start' });
     }
   })
   .catch(() => {
@@ -318,7 +322,9 @@ window.loadArchiveEdition = function(date) {
 
       if (dateEl) dateEl.textContent = formatDate(data.date).toUpperCase();
 
+      currentEdition = { date: asText(data?.date), issueNumber: data?.issueNumber };
       currentStories = Array.isArray(data.stories) ? data.stories : [];
+      updateEditionSeo(data, currentStories);
       currentFilter = 'all';
       currentSearch = '';
       if (searchInput) searchInput.value = '';
@@ -326,7 +332,12 @@ window.loadArchiveEdition = function(date) {
       renderStories(currentStories);
 
       if (historyPanel) historyPanel.classList.remove('open');
-      if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Link compartilhado (#noticia-N) leva direto à notícia; senão, ao topo da grade.
+      const shared = window.location.hash && String(date) === dateParam
+        ? document.getElementById(window.location.hash.slice(1))
+        : null;
+      if (shared) shared.scrollIntoView({ block: 'start' });
+      else if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     })
     .catch(() => {
       showMessage(grid, 'Edição não encontrada', 'O arquivo solicitado não existe no servidor. Selecione outra data do histórico.');
@@ -337,6 +348,40 @@ const urlParams = new URLSearchParams(window.location.search);
 const dateParam = urlParams.get('date');
 if (dateParam && isEditionsPage) {
   setTimeout(() => window.loadArchiveEdition(dateParam), 500);
+}
+
+/* Título, descrição e dados estruturados da edição aberta (seo-meta.js). */
+function updateEditionSeo(data, stories) {
+  if (!window.KingsSeo || !Array.isArray(stories) || !stories.length) return;
+  const date = formatDate(data?.date);
+  const label = formatEditionLabel(data?.issueNumber, data?.date) || date;
+  const lead = stories.find(story => story?.headline) || stories[0];
+  const titles = stories.slice(0, 4).map(story => asText(story?.title).trim()).filter(Boolean);
+  const categories = [...new Set(stories.map(story => asText(story?.category).trim()).filter(Boolean))];
+  const image = stories.map(story => safeExternalUrl(story?.image?.url)).find(Boolean);
+  window.KingsSeo.update({
+    title: `Notícias de ${date}: ${asText(lead?.title).trim()} | King's Newsletter`,
+    description: `${label}: ${stories.length} notícias com contexto — ${titles.join('; ')}`,
+    image,
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: `Notícias de ${date} | King's Newsletter`,
+      url: window.KingsSeo.canonical,
+      inLanguage: 'pt-BR',
+      about: categories.map(name => ({ '@type': 'Thing', name })),
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: stories.length,
+        itemListElement: stories.slice(0, 30).map((story, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: asText(story?.title).trim(),
+          url: `${window.KingsSeo.canonical}#noticia-${index + 1}`
+        }))
+      }
+    }
+  });
 }
 
 function createStoryCard(story, featured = false, index = 0) {
@@ -388,6 +433,10 @@ function createStoryCard(story, featured = false, index = 0) {
   const footer = createElement('div', 'story-footer');
   footer.append(createElement('span', 'source', formatDate(story?.publishedAt)));
 
+  // Âncora estável da notícia na edição (posição na lista completa, não na filtrada).
+  const position = currentStories.indexOf(story);
+  if (position >= 0) article.id = `noticia-${position + 1}`;
+
   const safeUrl = safeExternalUrl(story?.url);
   if (safeUrl) {
     const link = createElement('a', 'source-link', 'Ler fonte');
@@ -399,6 +448,17 @@ function createStoryCard(story, featured = false, index = 0) {
     const unavailable = createElement('span', 'source-link', 'Fonte indisponível');
     unavailable.setAttribute('aria-disabled', 'true');
     footer.append(unavailable);
+  }
+
+  if (window.KingsShare && article.id) {
+    const actions = createElement('div', 'story-actions');
+    actions.append(footer.lastElementChild);
+    actions.prepend(window.KingsShare.button({
+      ...story,
+      kicker: formatEditionLabel(currentEdition.issueNumber, currentEdition.date),
+      url: window.KingsShare.permalink('/editions', { date: currentEdition.date }, article.id)
+    }));
+    footer.append(actions);
   }
 
   article.append(meta, title, summary, context, footer);

@@ -31,6 +31,8 @@ app.use(securityHeaders);
 // Banner uploads arrive as base64 JSON (up to 2 MB of image); parse them
 // before the global 100 kB limit applies.
 app.use('/api/admin/email-banner', express.json({ limit: '3mb' }));
+// Uma edição semanal inteira (texto de todas as matérias) passa de 100 kB.
+app.use('/api/admin/editorial', express.json({ limit: '1mb' }));
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
@@ -59,6 +61,7 @@ app.put('/api/admin/schedule', require('./lib/api-handlers/admin/schedule'));
 app.all('/api/admin/updates', require('./lib/api-handlers/admin/updates'));
 app.all('/api/admin/digests', require('./lib/api-handlers/admin/digests'));
 app.all('/api/admin/email-banner', require('./lib/api-handlers/admin/email-banner'));
+app.all('/api/admin/editorial', require('./lib/api-handlers/admin/editorial'));
 app.get('/api/updates/active', require('./lib/api-handlers/updates/active'));
 app.get('/api/worker/config', require('./lib/api-handlers/worker/config'));
 app.post('/api/worker/heartbeat', require('./lib/api-handlers/worker/heartbeat'));
@@ -68,22 +71,17 @@ app.get('/api/camara-ceap', require('./lib/api-handlers/public-data/camara-ceap'
 app.get('/api/transferegov-emendas', require('./lib/api-handlers/public-data/transferegov-emendas'));
 app.get('/api/impostometro', require('./lib/api-handlers/public-data/impostometro'));
 app.get('/api/gastometro', require('./lib/api-handlers/public-data/gastometro'));
+app.get('/sitemap-edicoes.xml', require('./lib/api-handlers/public-data/sitemap-editions'));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-app.get('/editions', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/editions.html'));
-});
-
-app.get('/weekly', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/weekly.html'));
-});
-
-app.get('/resumo-diario', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/resumo-diario.html'));
-});
+// Com ?date, ?slug ou ?data a página sai com as metas da edição (prévia de links).
+const editionPage = require('./lib/api-handlers/public-data/edition-page');
+app.get('/editions', editionPage.news);
+app.get('/weekly', editionPage.weekly);
+app.get('/resumo-diario', editionPage.daily);
 
 app.get('/historia', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/historia.html'));
