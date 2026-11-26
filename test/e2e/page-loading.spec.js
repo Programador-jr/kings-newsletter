@@ -5,9 +5,10 @@ test('exibe e encerra o carregamento global da página', async ({ page }) => {
 
   const overlay = page.locator('#page-loading-overlay');
   await expect(overlay).toHaveCount(1);
-  await expect(overlay).toHaveAttribute('aria-label', 'Carregando página');
+  // O overlay anuncia a seção para onde o leitor vai.
+  await expect(overlay).toHaveAttribute('aria-label', 'Carregando História');
   await expect(overlay.locator('svg.page-loading-crown .page-loading-crown-jewel')).toHaveCount(3);
-  await expect(overlay).toHaveText('');
+  await expect(overlay.locator('.page-loading-label')).toHaveText('História');
   await expect(overlay).toHaveAttribute('aria-hidden', 'true');
   await expect(overlay).toHaveCSS('visibility', 'hidden');
   await expect(page.locator('html')).not.toHaveClass(/page-loader-active/);
@@ -82,6 +83,8 @@ test('mostra o conteúdo sem esperar requisições travadas', async ({ page }) =
 });
 
 test('prepara skeletons para imagens remotas e dados externos', async ({ page }) => {
+  // Segura a API para os medidores continuarem em carregamento durante a verificação.
+  await page.route('**/api/gastometro**', () => {});
   await page.goto('/gastometro', { waitUntil: 'domcontentloaded' });
 
   await expect.poll(() => page.evaluate(() => typeof window.pageSkeleton?.refresh)).toBe('function');

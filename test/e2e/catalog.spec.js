@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { stubRemoteMedia } = require('./helpers/media');
 
 test('páginas próprias de personalidades e países carregam sua categoria e preservam a rota nas fichas', async ({ page }) => {
   await page.goto('/personalidades');
@@ -46,6 +47,7 @@ test('catálogo político e páginas próprias não compartilham listagens', asy
 });
 
 test('fichas de outra categoria abrem sem trocar o catálogo de fundo', async ({ page }) => {
+  await stubRemoteMedia(page);
   await page.goto('/catalogo-politico#marxismo');
   await expect(page.locator('#catalog-dialog')).toBeVisible();
   await page.locator('.catalog-profile-tabs button').filter({ hasText: 'Personalidades' }).click();
