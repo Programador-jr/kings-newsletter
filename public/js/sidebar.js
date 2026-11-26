@@ -481,7 +481,7 @@ const initializeNavigation = () => {
       });
     });
     const bottomNav = document.querySelector(".site-bottom-nav");
-    const primaryRoutes = ["/", "/editions", "/economy", "/legis"];
+    const primaryRoutes = ["/", "/editions", "/weekly", "/resumo-diario"];
     let primaryActive = false;
     bottomNav?.querySelectorAll("[data-bottom-route]").forEach(link => {
       const route = link.dataset.bottomRoute;
