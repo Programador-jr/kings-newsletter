@@ -480,6 +480,20 @@ const initializeNavigation = () => {
         else link.removeAttribute("aria-current");
       });
     });
+    const bottomNav = document.querySelector(".site-bottom-nav");
+    const primaryRoutes = ["/", "/editions", "/economy", "/legis"];
+    let primaryActive = false;
+    bottomNav?.querySelectorAll("[data-bottom-route]").forEach(link => {
+      const route = link.dataset.bottomRoute;
+      const isCurrentPage = route === activePath;
+      link.classList.toggle("active", isCurrentPage);
+      if (isCurrentPage) {
+        link.setAttribute("aria-current", "page");
+        primaryActive = true;
+      } else link.removeAttribute("aria-current");
+    });
+    const moreButton = bottomNav?.querySelector("#site-bottom-more");
+    moreButton?.classList.toggle("active", !primaryRoutes.includes(activePath));
   };
   syncActiveLinks();
   window.addEventListener("site:catalog-change", syncActiveLinks);
@@ -552,6 +566,18 @@ const initializeNavigation = () => {
   openButton.addEventListener("click", () => {
     setOpen(desktopSidebar.matches ? !sidebar.classList.contains("is-open") : true);
   });
+  const bottomMore = document.getElementById("site-bottom-more");
+  bottomMore?.addEventListener("click", () => {
+    setOpen(!sidebar.classList.contains("is-open"));
+    bottomMore.setAttribute("aria-expanded", String(!sidebar.classList.contains("is-open")));
+  });
+  const syncBottomMore = () => {
+    const expanded = sidebar.classList.contains("is-open");
+    bottomMore?.setAttribute("aria-expanded", String(expanded));
+  };
+  openButton.addEventListener("click", syncBottomMore);
+  closeButton?.addEventListener("click", syncBottomMore);
+  backdrop.addEventListener("click", syncBottomMore);
   closeButton?.addEventListener("click", () => setOpen(false));
   backdrop.addEventListener("click", () => setOpen(false));
   document.addEventListener("keydown", event => {
