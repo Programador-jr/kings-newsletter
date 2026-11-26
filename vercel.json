@@ -74,6 +74,22 @@
   ],
   "rewrites": [
     {
+      "source": "/legis",
+      "destination": "https://kings-legis.vercel.app/legis"
+    },
+    {
+      "source": "/legis/:path*",
+      "destination": "https://kings-legis.vercel.app/legis/:path*"
+    },
+    {
+      "source": "/radar",
+      "destination": "https://kings-legis.vercel.app/radar"
+    },
+    {
+      "source": "/radar/:path*",
+      "destination": "https://kings-legis.vercel.app/radar/:path*"
+    },
+    {
       "source": "/sports/",
       "destination": "https://kings-sports.vercel.app/sports"
     },
