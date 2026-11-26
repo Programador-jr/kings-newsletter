@@ -1073,3 +1073,341 @@ html body main .number-field-steps button:active {
     transition: none;
   }
 }
+
+
+/* =====================================================================
+   COMPARTILHAR NOTÍCIA (share.js) — botão por matéria e painel <dialog>
+   com destino e formato. Usado em Edições, Resumo diário e Semanais.
+   ===================================================================== */
+
+.share-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+}
+
+html body .share-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+html body .share-trigger:hover,
+html body .share-trigger[aria-expanded="true"] {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+dialog.share-dialog {
+  width: min(560px, calc(100vw - 2 * var(--kn-modal-gap)));
+  margin: auto;
+  max-height: var(--kn-modal-max-height);
+  padding: 1.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  color: var(--text-main);
+}
+
+dialog.share-dialog[open] {
+  animation: share-enter var(--kn-component-enter-transition);
+}
+
+@keyframes share-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+}
+
+.share-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.share-dialog-title {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.share-dialog-story {
+  display: -webkit-box;
+  margin: 0.35rem 0 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.share-close {
+  display: inline-grid;
+  place-items: center;
+}
+
+.share-formats {
+  min-width: 0;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+.share-legend {
+  display: block;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.share-format-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.share-format {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.share-format input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.share-format:has(input:checked) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.share-format:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.share-text {
+  margin-bottom: 1rem;
+}
+
+.share-preview {
+  width: 100%;
+  min-height: 7.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--primary) 3%, var(--card-bg, var(--bg-container)));
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.share-preview:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.share-image {
+  display: grid;
+  place-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--primary) 3%, var(--card-bg, var(--bg-container)));
+}
+
+.share-image-preview {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(46vh, 380px);
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.share-image-preview:not([src]) {
+  display: none;
+}
+
+.share-image.is-loading {
+  min-height: 12rem;
+}
+
+.share-image.is-loading::after {
+  content: "Gerando imagem…";
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.share-targets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.share-targets[hidden],
+.share-text[hidden],
+.share-image[hidden] {
+  display: none;
+}
+
+html body .share-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 72px;
+  padding: 0.6rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
+}
+
+.share-target .share-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+html body .share-target:hover,
+html body .share-target:focus-visible {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+html body .share-target:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+html body .share-target.is-done {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+html body .share-target:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.share-target[hidden] {
+  display: none;
+}
+
+.share-image-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.share-hint {
+  margin: 0.75rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.share-status {
+  min-height: 1.2em;
+  margin: 0.35rem 0 0;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.share-status.is-error {
+  color: var(--warm);
+}
+
+.share-copy-buffer {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+  opacity: 0;
+}
+
+/* Celular: painel vira folha presa à base da tela. */
+@media (max-width: 640px) {
+  dialog.share-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: 88dvh;
+    margin: auto 0 0;
+    padding: 1.1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    border-bottom: 0;
+    border-radius: var(--kn-component-radius) var(--kn-component-radius) 0 0;
+  }
+
+  dialog.share-dialog[open] {
+    animation-name: share-sheet;
+  }
+
+  @keyframes share-sheet {
+    from { transform: translateY(24px); opacity: 0; }
+  }
+
+  .share-targets {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  html body .share-target {
+    min-height: 64px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .share-targets,
+  .share-format-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.share-dialog[open] {
+    animation: none;
+  }
+}

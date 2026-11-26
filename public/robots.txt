@@ -2,8 +2,20 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin.html
-Disallow: /api/
 Disallow: /subscription-status
+Disallow: /api/
+# Leituras públicas que as páginas buscam ao abrir: o Google precisa delas
+# para renderizar o conteúdo das edições, resumos e painéis.
+Allow: /api/news
+Allow: /api/daily-digests
+Allow: /api/weekly-editions
+Allow: /api/camara-deputados
+Allow: /api/camara-despesas
+Allow: /api/camara-ceap
+Allow: /api/transferegov-emendas
+Allow: /api/impostometro
+Allow: /api/gastometro
 
 Sitemap: https://kingsnewsletter.com/sitemap.xml
+Sitemap: https://kingsnewsletter.com/sitemap-edicoes.xml
 Sitemap: https://kingsnewsletter.com/sports/sitemap.xml

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/admin.css">
   <script src="/js/admin.js" defer></script>
+  <script src="/js/admin-editorial.js" defer></script>
   <script src="/js/vercel-observability.js" defer></script>
 </head>
 <body>
@@ -59,6 +60,7 @@
           <a class="nav-item active" href="#overview" data-admin-page-link="overview"><span class="nav-icon">▦</span> Visão geral <span class="nav-active-dot"></span></a>
           <a class="nav-item" href="#operations" data-admin-page-link="operations"><span class="nav-icon">◷</span> Envios e worker</a>
           <a class="nav-item" href="#digest" data-admin-page-link="digest"><span class="nav-icon">✉</span> Resumo diário</a>
+          <a class="nav-item" href="#editorial" data-admin-page-link="editorial"><span class="nav-icon">✎</span> Editorial</a>
           <a class="nav-item" href="#audience" data-admin-page-link="audience"><span class="nav-icon">◎</span> Audiência</a>
           <a class="nav-item" href="#activity" data-admin-page-link="activity"><span class="nav-icon">≡</span> Atividade e logs</a>
           <a class="nav-item" href="#updates" data-admin-page-link="updates"><span class="nav-icon">✦</span> Atualizações</a>
@@ -180,6 +182,25 @@
               </form>
             </div>
           </section>
+        </section>
+
+        <section data-admin-page="editorial" class="editorial-page hidden" aria-label="Editorial">
+          <div class="editorial-tabs" role="tablist" aria-label="Tipo de conteúdo">
+            <button id="editorial-tab-news" type="button" role="tab" aria-selected="true" aria-controls="editorial-workspace" data-editorial-type="news"><span class="editorial-tab-icon" aria-hidden="true">▤</span><span class="editorial-tab-text"><strong>Notícias do site</strong><small>Cards das edições</small></span><span class="editorial-tab-count" data-editorial-count="news"></span></button>
+            <button id="editorial-tab-daily" type="button" role="tab" aria-selected="false" aria-controls="editorial-workspace" data-editorial-type="daily" tabindex="-1"><span class="editorial-tab-icon" aria-hidden="true">✉</span><span class="editorial-tab-text"><strong>Resumo diário</strong><small>O Dia em Perspectiva</small></span><span class="editorial-tab-count" data-editorial-count="daily"></span></button>
+            <button id="editorial-tab-weekly" type="button" role="tab" aria-selected="false" aria-controls="editorial-workspace" data-editorial-type="weekly" tabindex="-1"><span class="editorial-tab-icon" aria-hidden="true">◫</span><span class="editorial-tab-text"><strong>Semanal</strong><small>A Semana em Foco</small></span><span class="editorial-tab-count" data-editorial-count="weekly"></span></button>
+          </div>
+          <div id="editorial-workspace" class="editorial-layout" role="tabpanel" aria-labelledby="editorial-tab-news">
+            <section class="section-block panel editorial-list-panel" aria-labelledby="editorial-list-title">
+              <div class="editorial-list-head"><div><div class="eyebrow" id="editorial-list-eyebrow">EDIÇÕES DO SITE</div><h2 id="editorial-list-title">Escolha uma edição</h2></div><button id="editorial-refresh" class="editorial-icon-button" type="button" aria-label="Recarregar lista" title="Recarregar lista">↻</button></div>
+              <label class="editorial-search"><span aria-hidden="true">⌕</span><input id="editorial-search" type="search" placeholder="Filtrar por data ou título…" aria-label="Filtrar lista"></label>
+              <div id="editorial-list" class="editorial-list" aria-live="polite"><div class="empty">Carregando…</div></div>
+            </section>
+            <section class="section-block panel editorial-editor-panel" aria-labelledby="editorial-editor-title">
+              <header class="editorial-editor-head"><div class="editorial-editor-heading"><div class="eyebrow">EDITOR</div><h2 id="editorial-editor-title">Nada selecionado</h2><p id="editorial-editor-meta" class="editorial-editor-meta"></p></div><div class="editorial-heading-actions"><span id="editorial-status" class="status hidden"></span><button id="editorial-toggle-all" class="button button-quiet hidden" type="button">Abrir todas</button><a id="editorial-view-link" class="button button-secondary hidden" href="/" target="_blank" rel="noopener">Ver no site <span aria-hidden="true">↗</span></a></div></header>
+              <div id="editorial-editor" class="editorial-editor"><div class="editorial-placeholder"><span aria-hidden="true">✎</span><strong>Escolha um item na lista</strong><p>Edite textos, fontes, links e imagens do que já foi publicado. As mudanças aparecem no site em até 5 minutos.</p></div></div>
+            </section>
+          </div>
         </section>
 
         <section data-admin-page="audience" class="section-block" aria-labelledby="subscriber-title"><div class="section-heading"><div><div class="eyebrow">AUDIÊNCIA</div><h2 id="subscriber-title">Inscrições</h2></div><span class="section-caption">Visão geral dos assinantes</span></div><div id="subscriber-cards" class="metric-grid"></div></section>

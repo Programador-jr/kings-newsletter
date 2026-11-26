@@ -568,6 +568,10 @@
   scroll-margin-top: 6.5rem;
 }
 
+.weekly-story {
+  scroll-margin-top: 6.5rem;
+}
+
 .weekly-chapter > h2 {
   margin: 0 0 1rem;
   padding-bottom: 0.85rem;
@@ -633,6 +637,12 @@
 
 .weekly-source a {
   color: var(--primary);
+}
+
+/* Botão Compartilhar (share.js) ao fim de cada matéria. */
+.weekly-story-actions {
+  display: flex;
+  margin: 0.5rem 0 1.25rem;
 }
 
 .weekly-analysis {
@@ -850,7 +860,8 @@
   }
 
   /* As seções param abaixo do cabeçalho do site + barra do sumário. */
-  .weekly-chapter {
+  .weekly-chapter,
+  .weekly-story {
     scroll-margin-top: calc(var(--weekly-header-offset, 4.5rem) + 4.5rem);
   }
 

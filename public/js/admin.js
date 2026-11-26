@@ -86,8 +86,14 @@ function parseRioDateTime(value) {
 }
 
 function setAdminPage(page, { updateHash = true } = {}) {
-  const allowed = ['overview', 'operations', 'digest', 'audience', 'activity', 'updates'];
-  currentAdminPage = allowed.includes(page) ? page : 'overview';
+  const allowed = ['overview', 'operations', 'digest', 'editorial', 'audience', 'activity', 'updates'];
+  const next = allowed.includes(page) ? page : 'overview';
+  // Sair do editorial com texto não salvo pede confirmação.
+  if (currentAdminPage === 'editorial' && next !== 'editorial' && window.AdminEditorial && !window.AdminEditorial.confirmLeave()) {
+    if (window.location.hash !== '#editorial') window.history.replaceState(null, '', '#editorial');
+    return;
+  }
+  currentAdminPage = next;
   document.querySelectorAll('[data-admin-page]').forEach(element => {
     const hidden = element.dataset.adminPage !== currentAdminPage ||
       (element.id === 'alerts-panel' && element.dataset.hasAlerts !== 'true');
@@ -103,6 +109,7 @@ function setAdminPage(page, { updateHash = true } = {}) {
     overview: ['VISÃO GERAL', 'Visão geral'],
     operations: ['OPERAÇÃO', 'Envios e worker'],
     digest: ['ENVIO DIÁRIO', 'Resumo diário'],
+    editorial: ['CONTEÚDO', 'Editorial'],
     audience: ['AUDIÊNCIA', 'Assinantes e entregabilidade'],
     activity: ['AUDITORIA', 'Atividade e logs'],
     updates: ['COMUNICAÇÃO', 'Avisos de atualização']
@@ -111,15 +118,21 @@ function setAdminPage(page, { updateHash = true } = {}) {
   heading.classList.remove('hidden');
   document.querySelector('#page-eyebrow').lastChild.textContent = ` ${titles[currentAdminPage][0]}`;
   document.querySelector('#dashboard-title').textContent = titles[currentAdminPage][1];
-  document.querySelector('#updated-at').textContent = currentAdminPage === 'updates'
-    ? 'Avisos visíveis no site público · horário de Rio Branco'
-    : document.querySelector('#updated-at').dataset.lastLoaded || 'Carregando dados…';
+  const pageNotes = {
+    updates: 'Avisos visíveis no site público · horário de Rio Branco',
+    editorial: 'Corrija textos, fontes, links e imagens do que já foi publicado'
+  };
+  document.querySelector('#updated-at').textContent = pageNotes[currentAdminPage] ||
+    document.querySelector('#updated-at').dataset.lastLoaded || 'Carregando dados…';
+  // Período e "Atualizar" do painel não se aplicam ao editorial.
+  heading.querySelector('.toolbar')?.classList.toggle('hidden', currentAdminPage === 'editorial');
   if (updateHash && window.location.hash !== `#${currentAdminPage}`) {
     window.history.replaceState(null, '', `#${currentAdminPage}`);
   }
   if (currentAdminPage === 'digest' && !document.querySelector('#digest-list').dataset.loaded) {
     refreshDigests().catch(error => showToast('Falha ao carregar resumos', error.message, 'error'));
   }
+  if (currentAdminPage === 'editorial') window.AdminEditorial?.activate();
   if (currentAdminPage === 'updates' && !document.querySelector('#updates-list').dataset.loaded) {
     refreshUpdates().catch(error => showToast('Falha ao carregar avisos', error.message, 'error'));
   }
