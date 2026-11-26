@@ -358,9 +358,8 @@ test('mobile e tema escuro', async ({ page }) => {
   await filterButton.click();
   await expect(page.locator('#catalog-filter-accordion .atlas-filters')).toBeHidden();
 
-  await page.locator('#sidebar-toggle').click();
-  await page.locator('#theme-toggle').click();
+  // No celular, o tema fica direto na barra superior.
+  await page.locator('.header-nav-actions #theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await page.locator('#site-sidebar-close').click();
   await expect(page.locator('.catalog-idea-card').first()).toBeVisible();
 });

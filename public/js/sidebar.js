@@ -417,6 +417,11 @@ const initializeNavigation = () => {
       setPalettePickerExpanded(false);
     });
   });
+  document.addEventListener("click", event => {
+    if (paletteToggle?.getAttribute("aria-expanded") !== "true") return;
+    if (paletteToggle.closest(".site-palette-picker")?.contains(event.target)) return;
+    setPalettePickerExpanded(false);
+  });
   paletteOptions?.addEventListener("keydown", event => {
     if (event.key === "Escape") {
       setPalettePickerExpanded(false);
@@ -482,15 +487,12 @@ const initializeNavigation = () => {
     });
     const bottomNav = document.querySelector(".site-bottom-nav");
     const primaryRoutes = ["/", "/editions", "/weekly", "/resumo-diario"];
-    let primaryActive = false;
     bottomNav?.querySelectorAll("[data-bottom-route]").forEach(link => {
       const route = link.dataset.bottomRoute;
       const isCurrentPage = route === activePath;
       link.classList.toggle("active", isCurrentPage);
-      if (isCurrentPage) {
-        link.setAttribute("aria-current", "page");
-        primaryActive = true;
-      } else link.removeAttribute("aria-current");
+      if (isCurrentPage) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
     });
     const moreButton = bottomNav?.querySelector("#site-bottom-more");
     moreButton?.classList.toggle("active", !primaryRoutes.includes(activePath));
@@ -513,16 +515,29 @@ const initializeNavigation = () => {
   sidebarPreferences?.remove();
 
   const desktopSidebar = window.matchMedia("(min-width: 1100px)");
+  // No celular, a bottom navbar substitui o hambúrguer e as preferências sobem para o topo.
+  const mobileNavigation = window.matchMedia("(max-width: 768px)");
+  const bottomMore = document.getElementById("site-bottom-more");
   let desktopSidebarOpen = true;
   const syncThemeToggleLocation = () => {
-    if (!themeToggle || !headerActions) return;
-    if (desktopSidebar.matches) {
-      themeToggle.classList.add("header-theme-toggle");
-      headerActions.append(themeToggle);
-    } else {
-      themeToggle.classList.remove("header-theme-toggle");
-      topPreferences.append(themeToggle);
+    if (!headerActions) return;
+    const isMobile = mobileNavigation.matches;
+    headerActions.classList.toggle("header-mobile-preferences", isMobile);
+    topPreferences.hidden = isMobile;
+    if (isMobile) {
+      themeToggle?.classList.remove("header-theme-toggle");
+      headerActions.prepend(...[palettePicker, themeToggle].filter(Boolean));
+      return;
     }
+    if (themeToggle) {
+      themeToggle.classList.toggle("header-theme-toggle", desktopSidebar.matches);
+      if (desktopSidebar.matches) headerActions.append(themeToggle);
+      else topPreferences.append(themeToggle);
+    }
+    if (palettePicker) topPreferences.append(palettePicker);
+  };
+  const syncBottomMore = () => {
+    bottomMore?.setAttribute("aria-expanded", String(!desktopSidebar.matches && sidebar.classList.contains("is-open")));
   };
   const syncSidebarLayout = () => {
     const isDesktop = desktopSidebar.matches;
@@ -535,6 +550,7 @@ const initializeNavigation = () => {
     openButton.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
     document.body.classList.toggle("sidebar-collapsed", isDesktop && !isOpen);
     document.body.classList.remove("sidebar-open");
+    syncBottomMore();
   };
 
   const setOpen = open => {
@@ -549,8 +565,9 @@ const initializeNavigation = () => {
     openButton.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
     document.body.classList.toggle("sidebar-collapsed", isDesktop && !isOpen);
     document.body.classList.toggle("sidebar-open", isOpen && !isDesktop);
+    syncBottomMore();
     if (isOpen) closeButton?.focus();
-    else openButton.focus();
+    else (mobileNavigation.matches && bottomMore ? bottomMore : openButton).focus();
   };
 
   syncThemeToggleLocation();
@@ -560,24 +577,14 @@ const initializeNavigation = () => {
     : callback => window.setTimeout(callback, 1);
   scheduleIdle(() => void initializeUpdateNotice(headerActions), { timeout: 2000 });
   desktopSidebar.addEventListener("change", syncThemeToggleLocation);
+  mobileNavigation.addEventListener("change", syncThemeToggleLocation);
   syncSidebarLayout();
   restoreSidebarScroll();
   desktopSidebar.addEventListener("change", syncSidebarLayout);
   openButton.addEventListener("click", () => {
     setOpen(desktopSidebar.matches ? !sidebar.classList.contains("is-open") : true);
   });
-  const bottomMore = document.getElementById("site-bottom-more");
-  bottomMore?.addEventListener("click", () => {
-    setOpen(!sidebar.classList.contains("is-open"));
-    bottomMore.setAttribute("aria-expanded", String(sidebar.classList.contains("is-open")));
-  });
-  const syncBottomMore = () => {
-    const expanded = sidebar.classList.contains("is-open");
-    bottomMore?.setAttribute("aria-expanded", String(expanded));
-  };
-  openButton.addEventListener("click", syncBottomMore);
-  closeButton?.addEventListener("click", syncBottomMore);
-  backdrop.addEventListener("click", syncBottomMore);
+  bottomMore?.addEventListener("click", () => setOpen(!sidebar.classList.contains("is-open")));
   closeButton?.addEventListener("click", () => setOpen(false));
   backdrop.addEventListener("click", () => setOpen(false));
   document.addEventListener("keydown", event => {
@@ -588,7 +595,6 @@ const initializeNavigation = () => {
   sidebar.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
     saveSidebarScroll();
     setOpen(false);
-    bottomMore?.setAttribute("aria-expanded", "false");
   }));
 };
 
