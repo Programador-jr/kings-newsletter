@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { stubRemoteMedia } = require('./helpers/media');
 
 test('páginas próprias de personalidades e países carregam sua categoria e preservam a rota nas fichas', async ({ page }) => {
   await page.goto('/personalidades');
@@ -46,6 +47,7 @@ test('catálogo político e páginas próprias não compartilham listagens', asy
 });
 
 test('fichas de outra categoria abrem sem trocar o catálogo de fundo', async ({ page }) => {
+  await stubRemoteMedia(page);
   await page.goto('/catalogo-politico#marxismo');
   await expect(page.locator('#catalog-dialog')).toBeVisible();
   await page.locator('.catalog-profile-tabs button').filter({ hasText: 'Personalidades' }).click();
@@ -358,9 +360,8 @@ test('mobile e tema escuro', async ({ page }) => {
   await filterButton.click();
   await expect(page.locator('#catalog-filter-accordion .atlas-filters')).toBeHidden();
 
-  await page.locator('#sidebar-toggle').click();
-  await page.locator('#theme-toggle').click();
+  // No celular, o tema fica direto na barra superior.
+  await page.locator('.header-nav-actions #theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await page.locator('#site-sidebar-close').click();
   await expect(page.locator('.catalog-idea-card').first()).toBeVisible();
 });

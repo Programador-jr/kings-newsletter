@@ -57,7 +57,8 @@ test('news content is rendered as text and dangerous source URLs are rejected', 
   await expect(card.locator('h2')).toHaveText(maliciousStory.title);
   await expect(card.locator('.summary')).toHaveCount(0);
   await expect(card).toContainText('Resumo malicioso');
-  await expect(card.locator('img, svg, script, iframe')).toHaveCount(0);
+  // O único SVG permitido é o ícone de compartilhar, criado pelo próprio site.
+  await expect(card.locator('img, svg:not(.share-icon), script, iframe')).toHaveCount(0);
   await expect(card.locator('a.source-link')).toHaveCount(0);
   await expect(card.locator('.source-link[aria-disabled="true"]')).toHaveText('Fonte indisponível');
   expect(await page.evaluate(() => window.__xssExecuted)).toBe(0);

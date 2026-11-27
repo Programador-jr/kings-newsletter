@@ -1,4 +1,5 @@
 const { expect, test } = require('@playwright/test');
+const { stubRemoteMedia } = require('./helpers/media');
 
 test('history timeline loads and historical event buttons open their story', async ({ page }) => {
   await page.goto('/historia');
@@ -56,6 +57,7 @@ test('presidents timeline shows the bundled portrait with its credit', async ({ 
   page.on('request', request => {
     if (/wikimedia\.org/.test(new URL(request.url()).hostname)) externalRequests.push(request.url());
   });
+  await stubRemoteMedia(page);
   await page.goto('/presidentes');
 
   const portrait = page.locator('.mandate-portrait-image');

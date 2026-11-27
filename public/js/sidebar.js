@@ -417,6 +417,11 @@ const initializeNavigation = () => {
       setPalettePickerExpanded(false);
     });
   });
+  document.addEventListener("click", event => {
+    if (paletteToggle?.getAttribute("aria-expanded") !== "true") return;
+    if (paletteToggle.closest(".site-palette-picker")?.contains(event.target)) return;
+    setPalettePickerExpanded(false);
+  });
   paletteOptions?.addEventListener("keydown", event => {
     if (event.key === "Escape") {
       setPalettePickerExpanded(false);
@@ -480,6 +485,17 @@ const initializeNavigation = () => {
         else link.removeAttribute("aria-current");
       });
     });
+    const bottomNav = document.querySelector(".site-bottom-nav");
+    const primaryRoutes = ["/", "/editions", "/weekly", "/resumo-diario"];
+    bottomNav?.querySelectorAll("[data-bottom-route]").forEach(link => {
+      const route = link.dataset.bottomRoute;
+      const isCurrentPage = route === activePath;
+      link.classList.toggle("active", isCurrentPage);
+      if (isCurrentPage) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    const moreButton = bottomNav?.querySelector("#site-bottom-more");
+    moreButton?.classList.toggle("active", !primaryRoutes.includes(activePath));
   };
   syncActiveLinks();
   window.addEventListener("site:catalog-change", syncActiveLinks);
@@ -499,16 +515,29 @@ const initializeNavigation = () => {
   sidebarPreferences?.remove();
 
   const desktopSidebar = window.matchMedia("(min-width: 1100px)");
+  // No celular, a bottom navbar substitui o hambúrguer e as preferências sobem para o topo.
+  const mobileNavigation = window.matchMedia("(max-width: 768px)");
+  const bottomMore = document.getElementById("site-bottom-more");
   let desktopSidebarOpen = true;
   const syncThemeToggleLocation = () => {
-    if (!themeToggle || !headerActions) return;
-    if (desktopSidebar.matches) {
-      themeToggle.classList.add("header-theme-toggle");
-      headerActions.append(themeToggle);
-    } else {
-      themeToggle.classList.remove("header-theme-toggle");
-      topPreferences.append(themeToggle);
+    if (!headerActions) return;
+    const isMobile = mobileNavigation.matches;
+    headerActions.classList.toggle("header-mobile-preferences", isMobile);
+    topPreferences.hidden = isMobile;
+    if (isMobile) {
+      themeToggle?.classList.remove("header-theme-toggle");
+      headerActions.prepend(...[palettePicker, themeToggle].filter(Boolean));
+      return;
     }
+    if (themeToggle) {
+      themeToggle.classList.toggle("header-theme-toggle", desktopSidebar.matches);
+      if (desktopSidebar.matches) headerActions.append(themeToggle);
+      else topPreferences.append(themeToggle);
+    }
+    if (palettePicker) topPreferences.append(palettePicker);
+  };
+  const syncBottomMore = () => {
+    bottomMore?.setAttribute("aria-expanded", String(!desktopSidebar.matches && sidebar.classList.contains("is-open")));
   };
   const syncSidebarLayout = () => {
     const isDesktop = desktopSidebar.matches;
@@ -521,6 +550,7 @@ const initializeNavigation = () => {
     openButton.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
     document.body.classList.toggle("sidebar-collapsed", isDesktop && !isOpen);
     document.body.classList.remove("sidebar-open");
+    syncBottomMore();
   };
 
   const setOpen = open => {
@@ -535,8 +565,9 @@ const initializeNavigation = () => {
     openButton.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
     document.body.classList.toggle("sidebar-collapsed", isDesktop && !isOpen);
     document.body.classList.toggle("sidebar-open", isOpen && !isDesktop);
+    syncBottomMore();
     if (isOpen) closeButton?.focus();
-    else openButton.focus();
+    else (mobileNavigation.matches && bottomMore ? bottomMore : openButton).focus();
   };
 
   syncThemeToggleLocation();
@@ -546,12 +577,14 @@ const initializeNavigation = () => {
     : callback => window.setTimeout(callback, 1);
   scheduleIdle(() => void initializeUpdateNotice(headerActions), { timeout: 2000 });
   desktopSidebar.addEventListener("change", syncThemeToggleLocation);
+  mobileNavigation.addEventListener("change", syncThemeToggleLocation);
   syncSidebarLayout();
   restoreSidebarScroll();
   desktopSidebar.addEventListener("change", syncSidebarLayout);
   openButton.addEventListener("click", () => {
     setOpen(desktopSidebar.matches ? !sidebar.classList.contains("is-open") : true);
   });
+  bottomMore?.addEventListener("click", () => setOpen(!sidebar.classList.contains("is-open")));
   closeButton?.addEventListener("click", () => setOpen(false));
   backdrop.addEventListener("click", () => setOpen(false));
   document.addEventListener("keydown", event => {
@@ -574,14 +607,18 @@ const mountSharedNavigation = async () => {
     const sharedHeader = template.content.querySelector(".site-header");
     const sharedSidebar = template.content.querySelector("#site-sidebar");
     const sharedBackdrop = template.content.querySelector("#site-sidebar-backdrop");
+    const sharedBottomNav = template.content.querySelector(".site-bottom-nav");
     const currentHeader = document.querySelector(".site-header");
     const currentSidebar = document.querySelector("#site-sidebar");
     const currentBackdrop = document.querySelector("#site-sidebar-backdrop");
-    if (!sharedHeader || !sharedSidebar || !sharedBackdrop || !currentHeader || !currentSidebar) return;
+    const currentBottomNav = document.querySelector(".site-bottom-nav");
+    if (!sharedHeader || !sharedSidebar || !sharedBackdrop || !sharedBottomNav || !currentHeader || !currentSidebar) return;
     currentHeader.replaceWith(sharedHeader);
     currentSidebar.replaceWith(sharedSidebar);
     if (currentBackdrop) currentBackdrop.replaceWith(sharedBackdrop);
     else document.body.append(sharedBackdrop);
+    if (currentBottomNav) currentBottomNav.replaceWith(sharedBottomNav);
+    else document.body.append(sharedBottomNav);
     window.dispatchEvent(new CustomEvent("site:navigation-ready"));
     initializeNavigation();
   } catch (error) {

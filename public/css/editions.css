@@ -388,6 +388,38 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* No celular o topo também leva tema e cores, então a busca desce para uma linha própria. */
+  .site-header:has(> .header-main-nav-editions) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    grid-template-areas:
+      "logo actions"
+      "search search";
+    row-gap: 0.75rem;
+  }
+
+  .site-header > .logo {
+    grid-area: logo;
+  }
+
+  .site-header > .header-main-nav-editions {
+    display: contents;
+  }
+
+  .header-main-nav-editions .nav-search {
+    grid-area: search;
+    width: 100%;
+    max-width: none;
+  }
+
+  .header-main-nav-editions .header-nav-actions {
+    grid-area: actions;
+    justify-self: end;
+  }
+}
+
 /* Alvos de toque confortáveis em links utilitários */
 
 .source-link {

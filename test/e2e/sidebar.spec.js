@@ -40,7 +40,7 @@ test('sidebar is persistent and complete on every desktop screen', async ({ page
     const headerLinks = page.locator('.header-primary-links a');
 
     await expect(sidebar, route).toBeVisible();
-    await expect(sidebar.locator('a'), route).toHaveCount(27);
+    await expect(sidebar.locator('a'), route).toHaveCount(28);
     await expect(headerLinks, route).toHaveCount(0);
     await expect(page.locator('.header-nav-actions #theme-toggle')).toBeVisible();
     await expect(sidebar.locator('#theme-toggle')).toHaveCount(0);
@@ -78,15 +78,16 @@ test('os atalhos de catálogo abrem as páginas dedicadas', async ({ page }) => 
   await expect(page.locator('#site-sidebar a[data-sidebar-catalog="valores"]')).toHaveCount(0);
 });
 
-test('sidebar remains a drawer on small screens', async ({ page }) => {
+test('sidebar remains a drawer on tablets', async ({ page }) => {
   for (const route of ['/subscription-status.html?status=confirmed', '/not-found']) {
-    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setViewportSize({ width: 900, height: 844 });
     await page.goto(route, { waitUntil: 'domcontentloaded' });
 
     const openButton = page.locator('#sidebar-toggle');
     const sidebar = page.getByRole('complementary', { name: 'Navegação principal' });
 
     await expect(sidebar, route).toBeHidden();
+    await expect(page.locator('.site-bottom-nav'), route).toBeHidden();
     await expect(openButton, route).toBeVisible();
     await openButton.click();
     await expect(sidebar, route).toBeVisible();
@@ -98,13 +99,56 @@ test('sidebar remains a drawer on small screens', async ({ page }) => {
   }
 });
 
+test('bottom navbar replaces the hamburger on phones', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/historia', { waitUntil: 'domcontentloaded' });
+
+  const bottomNav = page.getByRole('navigation', { name: 'Navegação inferior' });
+  const more = page.locator('#site-bottom-more');
+  const sidebar = page.getByRole('complementary', { name: 'Navegação principal' });
+
+  await expect(bottomNav).toBeVisible();
+  await expect(page.locator('#sidebar-toggle')).toBeHidden();
+  await expect(page.locator('.header-nav-actions #theme-toggle')).toBeVisible();
+  await expect(page.locator('.header-nav-actions #site-palette-toggle')).toBeVisible();
+  await expect(sidebar.locator('#theme-toggle')).toHaveCount(0);
+  await expect(more).toHaveClass(/active/);
+
+  await more.click();
+  await expect(sidebar).toBeVisible();
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  await more.click();
+  await expect(sidebar).toBeHidden();
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(more).toBeFocused();
+
+  await more.click();
+  await page.keyboard.press('Escape');
+  await expect(sidebar).toBeHidden();
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(more).toBeFocused();
+
+  await page.locator('#site-palette-toggle').click();
+  await page.locator('[data-palette-choice="blue"]').click();
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'blue');
+
+  await page.goto('/editions', { waitUntil: 'domcontentloaded' });
+  await expect(bottomNav.locator('a[href="/editions"]')).toHaveAttribute('aria-current', 'page');
+  await expect(more).not.toHaveClass(/active/);
+
+  const navTop = await bottomNav.evaluate(nav => nav.getBoundingClientRect().top);
+  const historyBottom = await page.locator('.history-toggle').evaluate(button => button.getBoundingClientRect().bottom);
+  expect(historyBottom).toBeLessThanOrEqual(navTop);
+});
+
 test('editions search stays visible on small screens and only on editions', async ({ page }) => {
   for (const width of [320, 390, 768, 1024]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/editions', { waitUntil: 'domcontentloaded' });
     const search = page.locator('#search-input');
     await expect(search, `${width}px`).toBeVisible();
-    await expect(page.locator('#sidebar-toggle'), `${width}px`).toBeVisible();
+    const menuButton = width <= 768 ? '#site-bottom-more' : '#sidebar-toggle';
+    await expect(page.locator(menuButton), `${width}px`).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, `${width}px`).toBeLessThanOrEqual(0);
   }

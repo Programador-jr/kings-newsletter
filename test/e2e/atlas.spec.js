@@ -51,8 +51,9 @@ test.describe('filtros no celular', () => {
       const panel = page.locator('.atlas-filter-accordion[open] .atlas-filters');
       // O <details> não pode cortar o painel suspenso (antes a regra global de cards aplicava overflow: hidden).
       await expect(page.locator('.atlas-filter-accordion[open]')).toHaveCSS('overflow', 'visible');
+      // O accordion anima a abertura: mede depois que o painel cresce.
+      await expect.poll(async () => (await panel.boundingBox())?.height ?? 0).toBeGreaterThan(100);
       const box = await panel.boundingBox();
-      expect(box.height).toBeGreaterThan(100);
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(390);
 

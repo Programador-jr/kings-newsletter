@@ -203,10 +203,9 @@ test('o comparador responde no mobile e no tema escuro', async ({ page }) => {
   );
   expect(overflow).toBeLessThanOrEqual(1);
 
-  await page.locator('#sidebar-toggle').click();
-  await page.locator('#theme-toggle').click();
+  // No celular, o tema fica direto na barra superior.
+  await page.locator('.header-nav-actions #theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await page.locator('#site-sidebar-close').click();
 
   await expect(page.locator('.compare-profile').first()).toBeVisible();
   await expect(page.locator('.compare-legend')).toContainText('União Soviética');

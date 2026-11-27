@@ -80,3 +80,25 @@ test('canonical APP_URL ignores request headers and rejects non-origin URLs', ()
   assert.throws(() => getAppUrl({ APP_URL: 'https://newsletter.example.com/path' }), /somente a origem/);
   assert.throws(() => getAppUrl({ NODE_ENV: 'production' }), /APP_URL é obrigatória/);
 });
+test('runtime validation allows Preview deployments without production-only APP_URL', () => {
+  assert.doesNotThrow(() => validateRuntimeEnvironment({
+    NODE_ENV: 'production',
+    VERCEL_ENV: 'preview',
+    MONGODB_URI: 'mongodb://localhost/newsletter'
+  }));
+});
+
+test('runtime validation still requires APP_URL and MongoDB in production deployments', () => {
+  assert.throws(
+    () => validateRuntimeEnvironment({ NODE_ENV: 'production', VERCEL_ENV: 'production' }),
+    /MONGODB_URI é obrigatória/
+  );
+  assert.throws(
+    () => validateRuntimeEnvironment({
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'production',
+      MONGODB_URI: 'mongodb://localhost/newsletter'
+    }),
+    /APP_URL é obrigatória/
+  );
+});
